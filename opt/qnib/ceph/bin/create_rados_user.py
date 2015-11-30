@@ -61,7 +61,6 @@ class RadosUser(object):
     print "INFO - Service 'ceph-radosgw' did come up within timeout"
     self.create()
     self.push_kv()
-    sys.exit(0)
 
   def create(self):
     """ create the user via bash command
