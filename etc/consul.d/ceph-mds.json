@@ -1,0 +1,15 @@
+{
+  "services": [
+    {
+        "id": "ceph-mds",
+        "name": "ceph-mds",
+        "tags": [],
+        "checks": [
+            {
+               "script": "/opt/qnib/ceph/mds/bin/isok.sh",
+               "interval": "5s"
+            }
+       ]
+    }
+  ]
+}

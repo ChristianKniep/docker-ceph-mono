@@ -1,0 +1,15 @@
+{
+  "services": [
+    {
+        "id": "ceph-osd",
+        "name": "ceph-osd",
+        "tags": [],
+        "checks": [
+            {
+               "script": "/opt/qnib/ceph/osd/bin/isok.sh",
+               "interval": "5s"
+            }
+       ]
+    }
+  ]
+}

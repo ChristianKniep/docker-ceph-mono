@@ -1,0 +1,24 @@
+consul:
+    extends:
+      file: base.yml
+      service: base
+    hostname: consul
+    container_name: consul
+    image: qnib/consul
+    environment:
+     - RUN_SERVER=true
+     - BOOTSTRAP_CONSUL=true
+    ports:
+     - "8500:8500"
+
+ceph:
+    extends:
+      file: base.yml
+      service: base
+    image: qnib/ceph-mono
+    hostname: ceph
+    container_name: ceph
+    links:
+     - consul:consul
+    ports:
+     - 7480:7480

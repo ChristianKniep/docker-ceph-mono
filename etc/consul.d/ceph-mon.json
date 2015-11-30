@@ -1,0 +1,16 @@
+{
+  "services": [
+    {
+        "id": "ceph-mon",
+        "name": "ceph-mon",
+        "tags": [],
+        "port": 6789,
+        "checks": [
+            {
+               "script": "/opt/qnib/ceph/mon/bin/isok.sh",
+               "interval": "5s"
+            }
+       ]
+    }
+  ]
+}

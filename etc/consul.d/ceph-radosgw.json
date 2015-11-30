@@ -1,0 +1,16 @@
+{
+  "services": [
+    {
+        "id": "ceph-radosgw",
+        "name": "ceph-radosgw",
+        "tags": [],
+        "port": 7480,
+        "checks": [
+            {
+               "script": "/opt/qnib/ceph/radosgw/bin/isok.sh",
+               "interval": "5s"
+            }
+       ]
+    }
+  ]
+}
