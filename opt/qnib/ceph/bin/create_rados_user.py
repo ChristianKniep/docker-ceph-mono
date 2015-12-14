@@ -21,10 +21,37 @@ Options:
 from docopt import docopt
 import envoy
 import consul
+import re
 import json
 import sys
 import time
-from pprint import pprint
+import requests
+
+def check_service(name):
+  """
+  :param name: supervisord service to look for
+  :return: True if service is up, False if not
+  """
+  url = "http://localhost:8500/v1/catalog/service/%s" % name
+  try:
+    req = requests.get(url)
+  except requests.exceptions.ConnectionError:
+    return False
+  return req.status_code == 200
+
+def wait_for_service(name, timeout=60):
+  """ Waits for service, True if available and False it timeout is reached
+  """
+  srv = check_service(name)
+  if srv:
+    return True
+  start = time.time()
+  while (time.time() - start) < timeout:
+    if check_service(name):
+      return True
+    else:
+      time.sleep(1)
+  return False
 
 class RadosUser(object):
   """ Deal with rados users
@@ -34,6 +61,11 @@ class RadosUser(object):
     self._cfg = cfg
     if self._cfg['--username'] is None:
       self._cfg['--username'] = self._cfg['<uid>']
+    print "INFO - Wait for 'consul' service: ",
+    if not wait_for_service("consul"):
+      print " [ERROR]"
+      raise IOError("Service consul not ready!")
+    print " [OK]"
     self._con = consul.Consul()
     self._kv = self._con.kv
 
@@ -51,8 +83,6 @@ class RadosUser(object):
       idx, res = self._con.catalog.service(name, wait=timeout)
     return True
 
-
-
   def run(self):
     """ running block """
     if not self.wait_for_srv("ceph-radosgw"):
@@ -60,8 +90,19 @@ class RadosUser(object):
       sys.exit(1)
     print "INFO - Service 'ceph-radosgw' did come up within timeout"
     self.create()
+    self.push_conf()
     self.push_kv()
 
+  def push_conf(self):
+        """ Collects config to push them to KV """
+        regex = re.compile("\s*key\s*=\s*(.*)")
+        with open("/etc/ceph/ceph.client.admin.keyring", "r") as fd:
+            lines = fd.readlines()
+        for line in lines:
+            line = line.strip()
+            mat = re.match(regex, line)
+            if mat:
+                self._kv.put("ceph/ceph.client.admin.keyring", mat.group(1))
   def create(self):
     """ create the user via bash command
     """
